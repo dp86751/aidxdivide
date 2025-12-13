@@ -16,23 +16,53 @@ type Resource = {
 
 export default function ResourcesPage() {
   const [items, setItems] = useState<Resource[]>([])
-  const [q, setQ] = useState('')
+  const [q, setQ] = useState("")
+  const [userId, setUserId] = useState<string | null>(null)
+  const [favorites, setFavorites] = useState<string[]>([])
+  const [loadingFavs, setLoadingFavs] = useState(true)
 
   useEffect(() => {
-    async function load() {
+    async function loadAll() {
+      // A) Load resources
       const { data, error } = await supabase
-        .from('Resources')
-        .select('*')
-        .order('created_at', { ascending: false })
-    if (error) {
-  console.error('Supabase error:', error)
-}
+        .from("Resources")
+        .select("*")
+        .order("created_at", { ascending: false })
 
-      if (!error && data) {
-        setItems(data as Resource[])
+      if (error) {
+        console.error("Supabase error loading resources:", error)
+      } else {
+        setItems((data || []) as Resource[])
       }
+
+      // B) Load user + their favorites
+      const { data: userData } = await supabase.auth.getUser()
+
+      if (!userData?.user) {
+        setUserId(null)
+        setFavorites([])
+        setLoadingFavs(false)
+        return
+      }
+
+      setUserId(userData.user.id)
+
+      const { data: favs, error: favErr } = await supabase
+        .from("Favorites")
+        .select("resource_id")
+        .eq("user_id", userData.user.id)
+
+      if (favErr) {
+        console.error("Error loading favorites:", favErr)
+        setFavorites([])
+      } else {
+        setFavorites((favs || []).map((f: any) => f.resource_id))
+      }
+
+      setLoadingFavs(false)
     }
-    load()
+
+    loadAll()
   }, [])
 
   const filtered = items.filter((r) =>
@@ -40,7 +70,48 @@ export default function ResourcesPage() {
     (r.category || '').toLowerCase().includes(q.toLowerCase()) ||
     (r.location || '').toLowerCase().includes(q.toLowerCase())
   )
+// helper: check if a resource is favorited
+function isFavorite(resourceId: string | number) {
+  return favorites.includes(String(resourceId))
+}
 
+async function toggleFavorite(resourceId: string | number) {
+  if (!userId) return
+
+  const rid = String(resourceId)
+
+  // If already favorited → delete
+  if (favorites.includes(rid)) {
+    const { error } = await supabase
+      .from("Favorites")
+      .delete()
+      .eq("user_id", userId)
+      .eq("resource_id", resourceId)
+
+    if (error) {
+      console.error("Error deleting favorite:", error)
+      return
+    }
+
+    setFavorites((prev) => prev.filter((x) => x !== rid))
+    return
+  }
+
+  // Otherwise → insert
+  const { error } = await supabase.from("Favorites").insert([
+    {
+      user_id: userId,
+      resource_id: resourceId,
+    },
+  ])
+
+  if (error) {
+    console.error("Error adding favorite:", error)
+    return
+  }
+
+  setFavorites((prev) => [...prev, rid])
+}
   return (
     <AuthGuard>
       <main style={{ padding: '2rem', maxWidth: 900, margin: '0 auto' }}>
@@ -67,6 +138,19 @@ export default function ResourcesPage() {
                 }}
               >
                 <h3 style={{ margin: '0 0 0.4rem 0' }}>{r.title}</h3>
+                <button
+  onClick={() => toggleFavorite(r.id)}
+  style={{
+    marginBottom: "0.5rem",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "1.1rem",
+  }}
+>
+  {isFavorite(r.id) ? "★ Favorited" : "☆ Save"}
+</button>
+
                 <p style={{ margin: '0 0 0.5rem 0', color: '#666' }}>{r.description}</p>
 
                 <div

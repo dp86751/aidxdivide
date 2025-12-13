@@ -7,7 +7,7 @@ export default function Home() {
         padding: "3rem 1.5rem",
         maxWidth: 960,
         margin: "0 auto",
-        color: "white",
+        color: "#0f172a",
       }}
     >
       {/* Header Section */}
@@ -16,7 +16,7 @@ export default function Home() {
           Bridging the AI & Digital Divide
         </h1>
 
-        <p style={{ fontSize: 18, lineHeight: 1.6, color: "#d0d0d0" }}>
+        <p style={{ fontSize: 18, lineHeight: 1.6, color: "#334155" }}>
           This website was created to help people who feel left behind by
           technology. Many communities unfortunately don’t have easy access to AI tools
            or clear explanations of how modern technology
@@ -75,7 +75,7 @@ export default function Home() {
       <section style={{ marginBottom: "2rem" }}>
         <h2 style={{ fontSize: 24, marginBottom: 8 }}>What You’ll Find Here</h2>
 
-        <ul style={{ lineHeight: 1.8, color: "#d0d0d0" }}>
+        <ul style={{ lineHeight: 1.8, color: "#334155" }}>
           <li>Beginner-friendly explanations of artificial intelligence.</li>
           <li>Links to trustworthy free or low-cost courses and tutorials.</li>
           <li>Hands-on tools to help users understand AI safely.</li>
@@ -92,7 +92,7 @@ export default function Home() {
       {/* Who It's For */}
       <section>
         <h2 style={{ fontSize: 24, marginBottom: 8 }}>Who This Website Helps</h2>
-        <p style={{ lineHeight: 1.6, color: "#d0d0d0" }}>
+        <p style={{ lineHeight: 1.6, color: "#334155" }}>
           This site is designed for anyone who feels overwhelmed by technology
           or unsure where to start. Whether you’re a student trying to learn new
           skills, an adult catching up with modern tools, or someone who wants
